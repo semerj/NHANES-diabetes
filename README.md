@@ -21,3 +21,56 @@
 
 ### Table 1
 <img src="./img/table1.png">
+
+# Features
+
+```
+DEMO
+    age:
+        RIDAGEYR
+    gender:
+        RIAGENDR
+    race:
+        RIDRETH1   # Race/Ethnicity - Recode
+    weight:
+        WTINT2YR   # Full Sample 2 Year Interview Weight
+        WTINT4YR   # Full Sample 4 Year Interview Weight
+        WTMEC2YR   # Full Sample 2 Year MEC Exam Weight
+        WTMEC4YR   # Full Sample 4 Year MEC Exam Weight
+    education:
+        DMDEDUC2   # Education Level - Adults 20+
+    house income:
+        INDHHINC   # Annual Household Income
+
+ALQ
+    alcohol use:
+        ALQ110     # Had at least 12 alcohol drinks/lifetime?
+        // ALD100  # Had at least 12 alcohol drinks/1 yr?
+        // ALD240  # How often drink beer (per month)
+
+SMQ
+    smoking:
+        SMD130     # Age started pipe smoking regularly
+        SMD410     # Does anyone smoke in the home
+        SMQ050Q    # How long since quit smoking cigarettes
+
+BMX
+    height:
+        BMXHT      # Standing Height (cm)
+    waist cir:
+        BMXWAIST   # Waist Circumference (cm)
+    bmi:
+        BMXBMI     # Body Mass Index (kg/m**2)
+
+BPQ
+    hypertension:
+        BPQ020     # Ever told you had high blood pressure
+
+PAQ
+    phys act:
+        PAQ180     # Avg level of physical activity each day
+
+MCQ
+    family hx:
+        MCQ250A    # Blood relatives have diabetes
+```
