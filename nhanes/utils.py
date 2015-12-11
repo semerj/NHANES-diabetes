@@ -1,5 +1,4 @@
 import pandas as pd
-from model_imports import *
 
 
 def fetch_NHANES(year, database, data_dir='./data'):
@@ -29,36 +28,16 @@ def fetch_NHANES(year, database, data_dir='./data'):
 
     return pd.read_sas(url)
 
-
-def parse_json_model(json_models):
-    n_models = len(json_models)
-    models = []
-    for jm in json_models:
-        # params = str_to_bool(jm['params'])
-        params = jm['params']
-        model = eval(jm['model'] + '()')
-        models.append((model, params))
-    return models
-
-
-def GridSearchCVWrapper(X, y, models):
-    best_model_params = []
-    for model, parameters in models:
-        clf = GridSearchCV(model,
-                           parameters,
-                           n_jobs=-1,
-                           cv=10)
-        clf.fit(X, y)
-        best_params = clf.best_params_.items()
-        best_model_params.append(best_params)
-        best_score = round(clf.best_score_, 3)
-        model_name = model.__class__.__name__
-
-        print('Model: {}'.format(model_name))
-        print('  Best Score: {}'.format(best_score))
-        print('  Best Params')
-        for k, v in best_params:
-            print('    {}: {}'.format(k, v))
-        print()
-
-    return best_model_params
+def GridSearchCVWrapper(model, param_grid, X, y):
+    clf_cv = GridSearchCV(
+        model,
+        param_grid=param_grid,
+        n_jobs=-1,
+        cv=10,
+        scoring='recall_weighted'
+    )
+    clf = clf_cv.fit(X, y)
+    best_params = clf.best_params_
+    best_score = round(clf.best_score_, 3)
+    print('Best Params: {}\nBest Score: {}'.format(best_params, best_score))
+    return best_params, best_score
