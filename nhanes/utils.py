@@ -1,4 +1,5 @@
 import pandas as pd
+from sklearn.grid_search import GridSearchCV
 
 
 def fetch_NHANES(year, database, data_dir='./data'):
