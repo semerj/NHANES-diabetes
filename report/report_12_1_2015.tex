@@ -1,455 +1,201 @@
 \documentclass{article} % For LaTeX2e
-\usepackage{nips15submit_e,times}
+\usepackage{nips15submit_e,times,graphicx}
 \usepackage{hyperref}
 \usepackage{url}
 %\documentstyle[nips14submit_09,times,art10]{article} % For LaTeX 2.09
 
 
-\title{Formatting Instructions for NIPS 2015}
+\title{An Ensemble Model for Predicting the Onset of Diabetes based on NHANES Data}
 
-
-\author{
-David S.~Hippocampus\thanks{ Use footnote for providing further information
-about author (webpage, alternative address)---\emph{not} for acknowledging
-funding agencies.} \\
-Department of Computer Science\\
-Cranberry-Lemon University\\
-Pittsburgh, PA 15213 \\
-\texttt{hippo@cs.cranberry-lemon.edu} \\
+\author{ John Semerdjian \thanks{This work is part of Computer Science 289 Course} \\
+School of Information \\
+University of California Berkeley\\
+Berkeley, CA 94720 \\
+\texttt{jsemer@berkeley.edu} \\
 \And
-Coauthor \\
-Affiliation \\
-Address \\
-\texttt{email} \\
-\AND
-Coauthor \\
-Affiliation \\
-Address \\
-\texttt{email} \\
-\And
-Coauthor \\
-Affiliation \\
-Address \\
-\texttt{email} \\
-\And
-Coauthor \\
-Affiliation \\
-Address \\
-\texttt{email} \\
-(if needed)\\
+Spencer Frank \\
+Department of Mechanical Engineering\\
+University of California Berkeley\\
+Berkeley, CA 94720 \\
+\texttt{spencerfrank@berkeley.edu} \\
 }
-
-% The \author macro works with any number of authors. There are two commands
-% used to separate the names and addresses of multiple authors: \And and \AND.
-%
-% Using \And between authors leaves it to \LaTeX{} to determine where to break
-% the lines. Using \AND forces a linebreak at that point. So, if \LaTeX{}
-% puts 3 of 4 authors names on the first line, and the last on the second
-% line, try using \AND instead of \And before the third author name.
 
 \newcommand{\fix}{\marginpar{FIX}}
 \newcommand{\new}{\marginpar{NEW}}
 
-%\nipsfinalcopy % Uncomment for camera-ready version
+\nipsfinalcopy % Uncomment for camera-ready version
 
 \begin{document}
-
 
 \maketitle
 
 \begin{abstract}
-The abstract paragraph should be indented 1/2~inch (3~picas) on both left and
-right-hand margins. Use 10~point type, with a vertical spacing of 11~points.
-The word \textbf{Abstract} must be centered, bold, and in point size 12. Two
-line spaces precede the abstract. The abstract must be limited to one
-paragraph.
+Prediction of disease onset from patient survey and lifestyle data is quickly becoming an important tool for diagnosing a disease before it progresses. In this study data from the National Health and Nutrition Examination Survey (NHANES) questionnaire is used to predict the onset of diabetes. An ensemble model using the output of several classification algorithms was developed to predict the onset on diabetes based on 16 features. The ensemble model had an AUC of 0.834 indicating high performance. 
+
 \end{abstract}
 
-\section{Submission of papers to NIPS 2015}
+\section{Introduction}
+Machine learning (ML) has proven itself a very useful tool in the ever expanding field of bioinformatics. It has been used to great effect in early prediction of diseases such as cancer\cite{capriotti_predicting_2006}, and work is being done in predicting the onset of Alzheimer's and Parkinson's disease \cite{capriotti_predicting_2006}. These predictions are based on data from gene sequencing and biomarkers, among other types of biological measurements. Efforts have also been made to predict the onset of diseases such as diabetes based on survey data. Thanks to technology that makes it much easier to collect survey data, in the future more of this type of data may become available on a larger sample of the population. This larger volume of survey data presents a new opportunity to improve overall prediction of disease, especially in diseases where lifetyle is  highly correlated to disease onset\cite{_reduction_2002}.
 
-NIPS requires electronic submissions.  The electronic submission site is  
+Previous work has focused on the use of survey data to predict the onset of diabetes in a large sample of the population using Support Vector Machines (SVM) \cite{yu_application_2010}. The results of this study produced an area under the receiver operating characteristic (ROC) curve of 0.83. The dataset used in \cite{yu_application_2010} is called the National Health and Nutrition Examination Survey (NHANES). Our goal is to use this same dataset and attempt to improve prediction accuracy. A secondary objective is to more clearly interpret the results, and indicate how such a model may be used in the real world.
+
+This paper is organized as follows. First, we will describe the NHANES dataset to be analyzed in this study. Next a description of the implemented classification methods will be described, along with a description of the proposed ensemble model. Results of each proposed model will be presented that indicate performance. Model performance will be discussed as well as some real world applications of the proposed classification models. 
+
+\section{NHANES Survey Data, Feature Section, and Label Determination}
+The National Health and Nutrition Examination Survey (NHANES) data is an on-going cross sectional sample survey of the US population where information about participants is gathered during in-home interviews. In addition to the in-home surveys, participants also have the option to obtain a physical examination in mobile examination centers \cite{center_for_disease_and_control_national_????}.
+
+\subsection{Patient exclusion and label assignment}
+As in \cite{yu_application_2010} et al, we limited our study to non-pregnant participants over 20 years of age. We focused our efforts on three waves of the survey conducted between 1999-2004, given the consistency across survey questions between waves from this time period.
+
+Our problem is a binary classification, and as such we must assign labels to our samples. To do this we used two inputs of each sample. The first was the patient's answer to the question, "Has a doctor ever told you that you have diabetes?" If that patient answered 'yes,' than a 1 was assigned to the patient indicating that they had diabetes, and was 0 otherwise. Using patients that responded to this question produced about 900 samples. The second, and more common method for determining the label of a patient was the value of their plasma glucose level, tested during examination. If the patient's glucose level was greater than 126 mg/dL, they were labeled as a diabetic and given a '1'. If their glucose level was less than this threshold they were assigned to the non-diabetic group. This method of labeling produced the remaining 4600 samples. With the labels determined, we now move onto feature selection. 
+
+\subsection{Feature selection}
+The features were chosen to be similar to the features used in \cite{yu_application_2010}, since much effort was already put in during this previous study to select good features. Additional features were examined, such as diet, however upon further analysis these were excluded due to their negligible effect on performance or a significant portion of their data was missing (>60\% missing). Of the multitude of potential features, we chose to focus our attention on only 16 features. These 16 features are described in \ref{feature-table}. This made interpretation simpler and training-time shorter. The training-time was a major concern because of the many parameters to be optimized during cross-validation.
+
+\subsection{Cross-Validation and Test Set}
+After exclusion and labeling, 5515 total samples were available from the NHANES 1999 to 2004 dataset. Before model training, a 20\% test set was removed from the entire dataset. This left 4412 samples for training and 1103 for testing. 
+
+For hyperparameter tuning 10-fold cross validation was used, with grid-search. To obtain testing accuracy error, bootstrapping was utilized. 
+
+\begin{table}[h!]
+\caption{Feature Description Table}
 \begin{center}
-   \url{http://papers.nips.cc}
-\end{center}
-
-Please read carefully the
-instructions below, and follow them faithfully.
-\subsection{Style}
-
-Papers to be submitted to NIPS 2015 must be prepared according to the
-instructions presented here. Papers may be only up to eight pages long,
-including figures. Since 2009 an additional ninth page \textit{containing only
-cited references} is allowed. Papers that exceed nine pages will not be
-reviewed, or in any other way considered for presentation at the conference.
-%This is a strict upper bound. 
-
-Please note that this year we have introduced automatic line number generation
-into the style file (for \LaTeXe and Word versions). This is to help reviewers
-refer to specific lines of the paper when they make their comments. Please do
-NOT refer to these line numbers in your paper as they will be removed from the
-style file for the final version of accepted papers.
-
-The margins in 2015 are the same as since 2007, which allow for $\approx 15\%$
-more words in the paper compared to earlier years. We are also again using 
-double-blind reviewing. Both of these require the use of new style files.
-
-Authors are required to use the NIPS \LaTeX{} style files obtainable at the
-NIPS website as indicated below. Please make sure you use the current files and
-not previous versions. Tweaking the style files may be grounds for rejection.
-
-%% \subsection{Double-blind reviewing}
-
-%% This year we are doing double-blind reviewing: the reviewers will not know 
-%% who the authors of the paper are. For submission, the NIPS style file will 
-%% automatically anonymize the author list at the beginning of the paper.
-
-%% Please write your paper in such a way to preserve anonymity. Refer to
-%% previous work by the author(s) in the third person, rather than first
-%% person. Do not provide Web links to supporting material at an identifiable
-%% web site.
-
-%%\subsection{Electronic submission}
-%%
-%% \textbf{THE SUBMISSION DEADLINE IS June 5, 2015. SUBMISSIONS MUST BE LOGGED BY
-%% 23:00, June 5, 2015, UNIVERSAL TIME}
-
-%% You must enter your submission in the electronic submission form available at
-%% the NIPS website listed above. You will be asked to enter paper title, name of
-%% all authors, keyword(s), and data about the contact
-%% author (name, full address, telephone, fax, and email). You will need to
-%% upload an electronic (postscript or pdf) version of your paper.
-
-%% You can upload more than one version of your paper, until the
-%% submission deadline. We strongly recommended uploading your paper in
-%% advance of the deadline, so you can avoid last-minute server congestion.
-%%
-%% Note that your submission is only valid if you get an e-mail
-%% confirmation from the server. If you do not get such an e-mail, please
-%% try uploading again. 
-
-
-\subsection{Retrieval of style files}
-
-The style files for NIPS and other conference information are available on the World Wide Web at
-\begin{center}
-   \url{http://www.nips.cc/}
-\end{center}
-The file \verb+nips2015.pdf+ contains these 
-instructions and illustrates the
-various formatting requirements your NIPS paper must satisfy. \LaTeX{}
-users can choose between two style files:
-\verb+nips15submit_09.sty+ (to be used with \LaTeX{} version 2.09) and
-\verb+nips15submit_e.sty+ (to be used with \LaTeX{}2e). The file
-\verb+nips2015.tex+ may be used as a ``shell'' for writing your paper. All you
-have to do is replace the author, title, abstract, and text of the paper with
-your own. The file
-\verb+nips2015.rtf+ is provided as a shell for MS Word users.
-
-The formatting instructions contained in these style files are summarized in
-sections \ref{gen_inst}, \ref{headings}, and \ref{others} below.
-
-%% \subsection{Keywords for paper submission}
-%% Your NIPS paper can be submitted with any of the following keywords (more than one keyword is possible for each paper):
-
-%% \begin{verbatim}
-%% Bioinformatics
-%% Biological Vision
-%% Brain Imaging and Brain Computer Interfacing
-%% Clustering
-%% Cognitive Science
-%% Control and Reinforcement Learning
-%% Dimensionality Reduction and Manifolds
-%% Feature Selection
-%% Gaussian Processes
-%% Graphical Models
-%% Hardware Technologies
-%% Kernels
-%% Learning Theory
-%% Machine Vision
-%% Margins and Boosting
-%% Neural Networks
-%% Neuroscience
-%% Other Algorithms and Architectures
-%% Other Applications
-%% Semi-supervised Learning
-%% Speech and Signal Processing
-%% Text and Language Applications
-
-%% \end{verbatim}
-
-\section{General formatting instructions}
-\label{gen_inst}
-
-The text must be confined within a rectangle 5.5~inches (33~picas) wide and
-9~inches (54~picas) long. The left margin is 1.5~inch (9~picas).
-Use 10~point type with a vertical spacing of 11~points. Times New Roman is the
-preferred typeface throughout. Paragraphs are separated by 1/2~line space,
-with no indentation.
-
-Paper title is 17~point, initial caps/lower case, bold, centered between
-2~horizontal rules. Top rule is 4~points thick and bottom rule is 1~point
-thick. Allow 1/4~inch space above and below title to rules. All pages should
-start at 1~inch (6~picas) from the top of the page.
-
-%The version of the paper submitted for review should have ``Anonymous Author(s)'' as the author of the paper.
-
-For the final version, authors' names are
-set in boldface, and each name is centered above the corresponding
-address. The lead author's name is to be listed first (left-most), and
-the co-authors' names (if different address) are set to follow. If
-there is only one co-author, list both author and co-author side by side.
-
-Please pay special attention to the instructions in section \ref{others}
-regarding figures, tables, acknowledgments, and references.
-
-\section{Headings: first level}
-\label{headings}
-
-First level headings are lower case (except for first word and proper nouns),
-flush left, bold and in point size 12. One line space before the first level
-heading and 1/2~line space after the first level heading.
-
-\subsection{Headings: second level}
-
-Second level headings are lower case (except for first word and proper nouns),
-flush left, bold and in point size 10. One line space before the second level
-heading and 1/2~line space after the second level heading.
-
-\subsubsection{Headings: third level}
-
-Third level headings are lower case (except for first word and proper nouns),
-flush left, bold and in point size 10. One line space before the third level
-heading and 1/2~line space after the third level heading.
-
-\section{Citations, figures, tables, references}
-\label{others}
-
-These instructions apply to everyone, regardless of the formatter being used.
-
-\subsection{Citations within the text}
-
-Citations within the text should be numbered consecutively. The corresponding
-number is to appear enclosed in square brackets, such as [1] or [2]-[5]. The
-corresponding references are to be listed in the same order at the end of the
-paper, in the \textbf{References} section. (Note: the standard
-\textsc{Bib\TeX} style \texttt{unsrt} produces this.) As to the format of the
-references themselves, any style is acceptable as long as it is used
-consistently.
-
-As submission is double blind, refer to your own published work in the 
-third person. That is, use ``In the previous work of Jones et al.\ [4]'',
-not ``In our previous work [4]''. If you cite your other papers that
-are not widely available (e.g.\ a journal paper under review), use
-anonymous author names in the citation, e.g.\ an author of the
-form ``A.\ Anonymous''. 
-
-
-\subsection{Footnotes}
-
-Indicate footnotes with a number\footnote{Sample of the first footnote} in the
-text. Place the footnotes at the bottom of the page on which they appear.
-Precede the footnote with a horizontal rule of 2~inches
-(12~picas).\footnote{Sample of the second footnote}
-
-\subsection{Figures}
-
-All artwork must be neat, clean, and legible. Lines should be dark
-enough for purposes of reproduction; art work should not be
-hand-drawn. The figure number and caption always appear after the
-figure. Place one line space before the figure caption, and one line
-space after the figure. The figure caption is lower case (except for
-first word and proper nouns); figures are numbered consecutively.
-
-Make sure the figure caption does not get separated from the figure.
-Leave sufficient space to avoid splitting the figure and figure caption.
-
-You may use color figures. 
-However, it is best for the
-figure captions and the paper body to make sense if the paper is printed
-either in black/white or in color.
-\begin{figure}[h]
-\begin{center}
-%\framebox[4.0in]{$\;$}
-\fbox{\rule[-.5cm]{0cm}{4cm} \rule[-.5cm]{4cm}{0cm}}
-\end{center}
-\caption{Sample figure caption.}
-\end{figure}
-
-\subsection{Tables}
-
-All tables must be centered, neat, clean and legible. Do not use hand-drawn
-tables. The table number and title always appear before the table. See
-Table~\ref{sample-table}.
-
-Place one line space before the table title, one line space after the table
-title, and one line space after the table. The table title must be lower case
-(except for first word and proper nouns); tables are numbered consecutively.
-
-\begin{table}[t]
-\caption{Sample table title}
-\label{sample-table}
-\begin{center}
-\begin{tabular}{ll}
-\multicolumn{1}{c}{\bf PART}  &\multicolumn{1}{c}{\bf DESCRIPTION}
+\begin{tabular}{llll}
+\multicolumn{1}{c}{\bf Feature Name}  &\multicolumn{1}{c}{\bf DESCRIPTION} &\multicolumn{1}{c}{\bf NHANES Code} &\multicolumn{1}{c}{\bf Feature Importances}
 \\ \hline \\
-Dendrite         &Input terminal \\
-Axon             &Output terminal \\
-Soma             &Cell body (contains cell nucleus) \\
+AGE        &Age at time of screening & RIDAGEYR & 0.169\\
+WAIST      &Waist circumference(cm) & BMXWAIST & 0.107\\
+REL        &Blood relatives have diabetes? & MCQ250A & 0.087\\
+HEIGHT     &Height (cm) & BMXHT & 0.086\\
+CHOL       &Total cholesterol (mg/dL) & LBXTC & 0.085\\
+LEG        &Upper Leg Length (cm) & BMXLEG & 0.080\\
+WEIGHT     &Weight (kg) & BMXWT & 0.071\\
+BMI        &Body mass index (kg/m$^2$) & BMXBMI & 0.067\\
+RACE       &Race/ethnicity & RIDRETH1 & 0.050\\
+HBP        &High blood pressure? & BPQ020 & 0.046\\
+INCOME     &Annual household income (dollars) & INDHHINC & 0.039\\
+ALC        &Amount of alcohol in past year? & ALQ120Q & 0.038\\
+SMOKE      &Age started smoking cigarettes regularly & SMD030 & 0.036\\
+EDU        &Education level & DMDEDUC2 & 0.017\\
+EXER       &Daily physical activity level & PAQ180 & 0.012\\
+GEND       &Gender & RIAGENDR & 0.011
 \end{tabular}
 \end{center}
+\label{feature-table}
 \end{table}
 
-\section{Final instructions}
-Do not change any aspects of the formatting parameters in the style files.
-In particular, do not modify the width or length of the rectangle the text
-should fit into, and do not change font sizes (except perhaps in the
-\textbf{References} section; see below). Please note that pages should be
-numbered.
+\section{Methods}
 
-\section{Preparing PostScript or PDF files}
+\begin{figure}
 
-Please prepare PostScript or PDF files with paper size ``US Letter'', and
-not, for example, ``A4''. The -t
-letter option on dvips will produce US Letter files.
+\begin{center}
+\framebox[5.5in]{\includegraphics[scale=1]{ensemblefigure.pdf}}
+\end{center}
+\caption{Schematic of Ensemble Method. Each trained model outputs a probability, and the average probability is taken with equal weight given to each model. Finally, a to be determined probability decision boundary T is selected based on tuning from recall results. Typically T=0.5, but by adjusting T, higher diabetes prediction rates can be obtained at the expense of labeling more healthy patients as diabetics.}
+\label{ensemble_scematic}
+\end{figure}
 
-Fonts were the main cause of problems in the past years. Your PDF file must
-only contain Type 1 or Embedded TrueType fonts. Here are a few instructions
-to achieve this.
+All modeling was done using scikit-learn, a python-based toolkit for simple and efficient machine learning, data mining and data analysis\cite{scikit-learn}. 
 
-\begin{itemize}
+\subsection{Individual Models}
+Five simple models were chosen that presented fairly high discriminative power on their own: Logistic Regression, K-Nearest Neighbors Classifier, Random Forests, Gradient Boosting Classifier, and Support Vector Machines (SVM). Other models such as Naive Bayes were tried, but did not produce accurate results compared to the five previous models. 
 
-\item You can check which fonts a PDF files uses.  In Acrobat Reader,
-select the menu Files$>$Document Properties$>$Fonts and select Show All Fonts. You can
-also use the program \verb+pdffonts+ which comes with \verb+xpdf+ and is
-available out-of-the-box on most Linux machines.
+Each model had a few hyper parameters associated with it. The five models in total contained a total of 10 hyperparameters. Using grid search would be intractable to tune all the hyperparameters simultaneously, since to test even just 10 values for each would produced 10$^{10}$ evaluations. Instead, each model was tuned separately. This led to much shorter tuning times that were possible on a laptop computer. 
 
-\item The IEEE has recommendations for generating PDF files whose fonts
-are also acceptable for NIPS. Please see
-\url{http://www.emfield.org/icuwb2010/downloads/IEEE-PDF-SpecV32.pdf}
+\subsection{Ensemble Model}
+After training, the five previously described models were set to output probabilities p. These probabilities were then fed into the ensemble model (see Figure \ref{ensemble_scematic}), which took a simple average of the 5 inputs to obtain $\bar{p}$. Initially, as is typical, T was set to 0.5. This however lead to a very poor recall rate on the diabetic patients. Because of this observation of very high type II error (i.e. low recall), and considering that it is of greater importance to identify a diabetic than misidentify a healthy patient, the decision boundary T was adjusted to obtain a more desirable recall rate.
 
-\item LaTeX users:
+\section{Results}
 
-\begin{itemize}
+\subsection{Overall Discriminative Power of all Models}
+The overall discriminative power of the model is shown by the Reciever Operating Characteristic (ROC) curves in Figure \ref{roc_individual}. From the figure it can be seen that the Gradient Boosting Classifier performs best with an AUC of 0.83. Random forests also performs exceptionally well. The other three classifiers were noticeably worse at classification, with the worst performance being the K-Nearest Neighbors. The AUCs of each individual model, as well as other metrics, can be found in Table \ref{metrics_table}. 
 
-\item Consider directly generating PDF files using \verb+pdflatex+
-(especially if you are a MiKTeX user). 
-PDF figures must be substituted for EPS figures, however.
+Unfortunately, the ensemble model failed to improve performance significantly, and in fact was less accurate than the Gradient Boost Classifier. However the difference between the two was very small, as seen in the performance metrics in \ref{metrics_table}. 
 
-\item Otherwise, please generate your PostScript and PDF files with the following commands:
-\begin{verbatim} 
-dvips mypaper.dvi -t letter -Ppdf -G0 -o mypaper.ps
-ps2pdf mypaper.ps mypaper.pdf
-\end{verbatim}
+\begin{figure}[t]
+\begin{center}
+\framebox[4.5in]{\includegraphics[scale=0.5]{ROC_curve.png}}
+\end{center}
+\caption{Reciever Operating Characteristic (ROC) curves are plotted for each individual model and the ensemble model. The performance metrics can be found in Table \ref{metrics_table}.}
+\label{roc_individual}
+\end{figure}
 
-Check that the PDF files only contains Type 1 fonts. 
-%For the final version, please send us both the Postscript file and
-%the PDF file. 
+\begin{table}[h]
+\caption{Performance Metrics}
+\begin{center}
+\begin{tabular}{lllll}
+\multicolumn{1}{c}{\bf Model} &\multicolumn{1}{c}{\bf AUC} &\multicolumn{1}{c}{\bf F1 Score} &\multicolumn{1}{c}{\bf Recall} &\multicolumn{1}{c}{\bf Precision}
+\\ \hline \\
+K-Nearest Neighbors & 0.793 & 0.73 & 0.82 & 0.67 \\
+Logistic Regression & 0.797 & 0.79 & 0.81 & 0.78 \\
+Support Vector      & 0.812 & 0.79 & 0.82 & 0.78 \\
+Random Forests      & 0.817 & 0.79 & 0.82 & 0.79 \\
+Gradient Boosting   & 0.840 & 0.81 & 0.82 & 0.80 \\
+Ensemble            & 0.834 & 0.78 & 0.82 & 0.78 \\
+\end{tabular}
+\end{center}
+\label{metrics_table}
+\end{table}
 
-\item xfig "patterned" shapes are implemented with 
-bitmap fonts.  Use "solid" shapes instead. 
-\item The \verb+\bbold+ package almost always uses bitmap
-fonts.  You can try the equivalent AMS Fonts with command
-\begin{verbatim}
-\usepackage[psamsfonts]{amssymb}
-\end{verbatim}
- or use the following workaround for reals, natural and complex: 
-\begin{verbatim}
-\newcommand{\RR}{I\!\!R} %real numbers
-\newcommand{\Nat}{I\!\!N} %natural numbers 
-\newcommand{\CC}{I\!\!\!\!C} %complex numbers
-\end{verbatim}
+\subsection{Recall and the Decision Boundary T}
+The recall rate for the diabetics is defined as the number of diabetics identified, over the total number of diabetics in the sample. The recall rate is a function the decision boundary T, and is plotted in Figure \ref{recall_decision}. At the default decision boundary of T=0.5, the recall rate for diabetics was only 0.35, meaning that only 35\% of the time we classify a diabetic patient that in-fact has diabetics. Since our objective is to maximize our ability to identify diabetics, we decided to shift our decision boundary to a point which would allow us to identify diabetics at least 75\% of the time. To achieve this, we shifted out decision boundary rightward to T=0.78, where the recall rate for diabetics was 0.75, and coincidentally, the recall rate for non-diabetics was also 0.75. This means that by shifting our decision boundary, we were able to identify many more diabetics, only having to sacrifice a recall rate of 18\% on the non-diabetics. 
 
-\item Sometimes the problematic fonts are used in figures
-included in LaTeX files. The ghostscript program \verb+eps2eps+ is the simplest
-way to clean such figures. For black and white figures, slightly better
-results can be achieved with program \verb+potrace+.
-\end{itemize}
-\item MSWord and Windows users (via PDF file):
-\begin{itemize}
-\item Install the Microsoft Save as PDF Office 2007 Add-in from
-\url{http://www.microsoft.com/downloads/details.aspx?displaylang=en\&familyid=4d951911-3e7e-4ae6-b059-a2e79ed87041}
-\item Select ``Save or Publish to PDF'' from the Office or File menu
-\end{itemize}
-\item MSWord and Mac OS X users (via PDF file):
-\begin{itemize}
-\item From the print menu, click the PDF drop-down box, and select ``Save
-as PDF...''
-\end{itemize}
-\item MSWord and Windows users (via PS file):
-\begin{itemize}
-\item To create a new printer
-on your computer, install the AdobePS printer driver and the Adobe Distiller PPD file from
-\url{http://www.adobe.com/support/downloads/detail.jsp?ftpID=204} {\it Note:} You must reboot your PC after installing the
-AdobePS driver for it to take effect.
-\item To produce the ps file, select ``Print'' from the MS app, choose
-the installed AdobePS printer, click on ``Properties'', click on ``Advanced.''
-\item Set ``TrueType Font'' to be ``Download as Softfont''
-\item Open the ``PostScript Options'' folder
-\item Select ``PostScript Output Option'' to be ``Optimize for Portability''
-\item Select ``TrueType Font Download Option'' to be ``Outline''
-\item Select ``Send PostScript Error Handler'' to be ``No''
-\item Click ``OK'' three times, print your file.
-\item Now, use Adobe Acrobat Distiller or ps2pdf to create a PDF file from
-the PS file. In Acrobat, check the option ``Embed all fonts'' if
-applicable.
-\end{itemize}
+\begin{figure}[h]
+\begin{center}
+\framebox[5.5in]{\includegraphics[scale=0.5]{Recall_score.png}}
+\end{center}
+\caption{Recall vs. Decision Boundary curves for diabetes and no diabetes for the Gradient Boosting Classifier. At the default classification of T=0.5 (dotted line), the recall rate is 0.93 for non-diabetics and 0.35 for diabetics. For T=0.78 (dotted line) the recall rate for non-diabetics is 0.75 and the recall rate for diabetics is 0.75, representing a large improvement in identifying the diabetics patients.}
+\label{recall_decision}
+\end{figure}
 
-\end{itemize}
-If your file contains Type 3 fonts or non embedded TrueType fonts, we will
-ask you to fix it. 
+\begin{figure}[h]
+\begin{center}
+\framebox[5.5in]{\includegraphics[scale=0.5]{Recall_score_all.png}}
+\end{center}
+\caption{Recall vs. Decision Boundary curves for diabetic and non-diabetics by model.}
+\label{roc_error_decision}
+\end{figure}
 
-\subsection{Margins in LaTeX}
- 
-Most of the margin problems come from figures positioned by hand using
-\verb+\special+ or other commands. We suggest using the command
-\verb+\includegraphics+
-from the graphicx package. Always specify the figure width as a multiple of
-the line width as in the example below using .eps graphics
-\begin{verbatim}
-   \usepackage[dvips]{graphicx} ... 
-   \includegraphics[width=0.8\linewidth]{myfile.eps} 
-\end{verbatim}
-or % Apr 2009 addition
-\begin{verbatim}
-   \usepackage[pdftex]{graphicx} ... 
-   \includegraphics[width=0.8\linewidth]{myfile.pdf} 
-\end{verbatim}
-for .pdf graphics. 
-See section 4.4 in the graphics bundle documentation (\url{http://www.ctan.org/tex-archive/macros/latex/required/graphics/grfguide.ps}) 
- 
-A number of width problems arise when LaTeX cannot properly hyphenate a
-line. Please give LaTeX hyphenation hints using the \verb+\-+ command.
+\subsection{Testing Error}
+In order to obtain the error on the test accuracy results bootstrapping was performed for training on the best performing model, the Gradient Boosting Classifier. This gave $N_{boot}$ classifiers all having slightly different discriminative abilities. To show the error in classification, ROC curves with continuous upper and lower error bars are shown in Figure \ref{roc_error_decision}. This figure plots three ROC curves, the middle one is the average ROC curve for all the $N_{boot}$ trained models. The upper and lower curves are the 2.5\% and 97.5\% empirical quantiles of the bootstrap sample (i.e. 95\% confidence intervals). To obtain this distribution, $N_{boot}$ = 1000 models were trained. Mean AUC from bootstrapping was 0.83, with upper and lower confidence intervals of 0.82 and 0.84. This indicates that the training is not highly sensitive to the training data.
 
+\begin{figure}[h]
+\begin{center}
+\framebox[5.5in]{\includegraphics[scale=0.5]{Bootstrap_ROC_confint.png}}
+\end{center}
+\caption{ROC curve for the Gradient Boosting Classifier. Also plotted are the 1-standard deviation spread representing the testing performance for models trained on $N_{boot}$ bootstrapped samples. The very small difference between the average (middle curve) and the top and bottom curves show that the model performance is not sensitive to the training data.}
+\label{roc_error_decision}
+\end{figure}
+
+\section{Discussion and Applications}
+
+\subsection{Model Performance}
+
+Five models were used to classify diabetics and non-diabetics based on survey data collected from NHANES. These five models were given equal weighting in an ensemble model that used the probabilistic output of each model. From the ROC curves of all the models (seen in Figure \ref{roc_individual}) it was found that the best performing model (the highest AUC, seen in Table \ref{metrics_table}) was the Gradient Boosting Classifier, which actually beat out the ensemble method. 
+
+We were surprised that the lone Gradient Boosting Classifier performed best, as we thought that the wisdom of each model would combine into the best classifier through an ensemble method. This would have been consistent with the theory of the 'wisdom of crowds.'
+
+The poorer performance of the ensemble method could be due to a few factors. The first is that there was inadequate hyperparameter tuning. To prevent the need to tune 10 hyperparameters simultaneously, which would have taken an exorbitant amount of time, we instead chose to tune each model separately. In doing this we prevented the ensemble model from really using the best features of each model, as we did not allow for the tuning of hyperparameters based on ensemble performance. 
+An additional hyperparameter that should have been optimized was the weighting of each model. Our ensemble model weighted each model equally, which may have given too much weight to poorer performing models such as the K-Nearest Neighbors Classifier (the AUC for this model was much lower than the AUC of the other 4 models). 
+
+In the future, if computational time were not an issue, simultaneous tuning of hyperparameters would be carried out. Additional performance enhancement could also be achieve by implementing a 'stacked model,' which is essentially a two-layered model that would use the output of each individual model as a feature to train a lower dimensional model. 
+
+One of our preprocessing steps was to impute values for missing data. This is particularly important for where >25\% of cells are missing values. For numerical features (e.g. BMI and height) we calculated the mean from the training data and assigned it to missing fields in both training and test sets. For categorical variables (e.g. income bracket and alcohol use) we assigned missing values the most common label from the training set. Further performance enhancement could also be obtained imputing missing data by building a model from the available to predict missing values for a given feature and through matrix factorization. 
+
+The top AUCs from the models presented in this paper were consistent with the work of \cite{yu_application_2010}, who achieved and AUC of 0.83 for a well-tuned support vector machine. Our consistency with this previous study indicates that the 0.83 AUC may be a hard upper limit on the discriminative power of models trained on the NHANES data for the purpose of the prediction of diabetes using simple classification techniques such as those discussed in the present work and in \cite{yu_application_2010}. However, considering marginal effort was made to impute data in either works, clever data imputation may present the best path for increasing performance.
+
+\subsection{Applications} 
+When creating classification models for disease detection it is always important to keep the end use in mind. The classification model presented here is used for the purpose of early detection of diabetes based on easily obtainable survey data. The features are responses to questions and simple examination measurements shown in Table \ref{feature-table}. 
+
+A decision boundary of T=0.78 was chosen that produced a recall rate of 75\% for diabetics, meaning that 75 out of 100 diabetics will identified. This was considered an acceptable outcome from a diagnostic standpoint. However, the caveat is that to ensure a 75\% recall rate many non-diabetics will be identified as diabetics. To give specific numbers, with a recall rate of 75\% for non-diabetics, we can eliminate 5515 * 0.81*0.75 = 3350 patients from the total population of 5500 (0.81 is the proportion of non-diabetics in the entire training set).  This would leave 2165 patients left, which would be the number of patients that would need to be notified they were diabetic in order to ensure 75\% of the actual diabetics are notified. This represents a huge decrease in cost, only needing to notify about 40\% of the original 5515 patients. With these numbers in mind, one can decided whether this classification scheme is cost-effective as a tool for identifying diabetes.
+  
+\section{Conclusions}
+5 separate models were used to classify diabetics vs. non-diabetics. The output of these models was used to create an ensemble model. The best performing model was not the ensemble model, but rather the Gradient Boosting Classifier, which obtained 0.834 AUC. This AUC is consistent with previous findings and indicates that in using survey data one can expect reasonable classification performance. 
 
 \subsubsection*{Acknowledgments}
+We would like to thank Professor Efros and Professor Guyon for a well-run Computer Science 289 course. Additionally, the GSIs were very helpful in getting us through the long homework assignments. Go Bears!
 
-Use unnumbered third level headings for the acknowledgments. All
-acknowledgments go at the end of the paper. Do not include 
-acknowledgments in the anonymized submission, only in the 
-final paper. 
-
-\subsubsection*{References}
-
-References follow the acknowledgments. Use unnumbered third level heading for
-the references. Any choice of citation style is acceptable as long as you are
-consistent. It is permissible to reduce the font size to `small' (9-point) 
-when listing the references. {\bf Remember that this year you can use
-a ninth page as long as it contains \emph{only} cited references.}
-
-\small{
-[1] Alexander, J.A. \& Mozer, M.C. (1995) Template-based algorithms
-for connectionist rule extraction. In G. Tesauro, D. S. Touretzky
-and T.K. Leen (eds.), {\it Advances in Neural Information Processing
-Systems 7}, pp. 609-616. Cambridge, MA: MIT Press.
-
-[2] Bower, J.M. \& Beeman, D. (1995) {\it The Book of GENESIS: Exploring
-Realistic Neural Models with the GEneral NEural SImulation System.}
-New York: TELOS/Springer-Verlag.
-
-[3] Hasselmo, M.E., Schnell, E. \& Barkai, E. (1995) Dynamics of learning
-and recall at excitatory recurrent synapses and cholinergic modulation
-in rat hippocampal region CA3. {\it Journal of Neuroscience}
-{\bf 15}(7):5249-5262.
-}
+\bibliography{references.bib}
+\bibliographystyle{plain}
 
 \end{document}
