@@ -63,3 +63,4 @@ target/
 *.aux
 *.fdb_latexmk
 
+*.XPT
