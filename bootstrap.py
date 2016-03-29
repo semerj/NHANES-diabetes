@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os
 import urllib
 import logging
@@ -197,7 +199,6 @@ def merge_data(data_dir):
 
 
 if __name__ == '__main__':
-    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    data_dir = os.path.join(root_dir, 'data')
+    data_dir = 'data'
     download_data(data_dir)
     merge_data(data_dir)
